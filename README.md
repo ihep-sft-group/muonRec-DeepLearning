@@ -6,7 +6,8 @@ TensorFlow：1.3.0
 Offline：J16v1r4、J17v1r1  
 ## 前言
 江门中微子实验具有丰富的物理研究内容，其主要物理目标为测量中微子的质量等级和精确测量中微子的振荡参数。
-江门中微子实验探测器如图所示：
+江门中微子实验探测器如图所示：  
+
 ![image](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/detector.png)
 
 宇宙线缪子作为主要的本底之一，其次级产物Li9/He8与实验测量的IBD过程的行为非常相似，无法区分，因此缪子径迹的重建非常关键。相比于已有的重建方法，基于深度学习的方法不需要构建复杂的光学模型和进行额外的修正，可作为现有重建方法的补充。主要包括一下几个部分：
@@ -14,6 +15,7 @@ Offline：J16v1r4、J17v1r1
 ## 1. 数据集篇 —— 三军未动，粮草先行 
 深度学习是由数据驱动的，数据样本将直接和重建的性能相关。
 数据的处理流程如图所示：  
+
 ![image](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/data-aug.png)
 
 1.1 顶部径迹探测器的重建。
@@ -39,7 +41,8 @@ Offline：J16v1r4、J17v1r1
 经过中心探测器之后，得到中心探测器的模拟数据。将模拟数据进行数据提取和建模之后形成类似图片形式的数据。建模方式有很多种，可以根据需要选择，但需要保证尽量减少PMT的位置信息、电荷数和最快光时间信息的丢失。本人主要使用了等距圆柱投影和球面数据形式。
 * source sim-nn/sim-data/cnn.sh   #提取模拟数据中所有PMT的击中信息 输入文件路径list 输出signal-0_evt_-175.322_-13827.3_25000_0.0415556_0.510892_-0.85864_183785.root
 * source sim-nn/sim-tfrecod/junonn_tt_root__tfrecords.py #输入为signal-*.root所在的目录，产生evt_1000_1.bin.tfrecords文件
-* 2D投影PMT位置图片示例：![image](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/2D-convg.png)  
+* 2D投影PMT位置图片示例：  
+![image](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/2D-convg.png)  
 
 1.5 数据增强-旋转。
 将标签为顶部径迹探测器的重建信息Rec的数据集使用缪子事例的增强方法产生旋转后的事例，旋转后的事例覆盖了TT探测器没有覆盖的事例，如图所示：  

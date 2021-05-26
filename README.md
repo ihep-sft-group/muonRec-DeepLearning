@@ -7,7 +7,7 @@ Offline：J16v1r4、J17v1r1
 ## 1. 数据集篇 —— 三军未动，粮草先行 
 深度学习是由数据驱动的，数据样本将直接和重建的性能相关。
 数据的处理流程如图所示：
-![](https://jupyter.ihep.ac.cn/uploads/upload_a8cbe3bb115e2130315a0970d81e87d8.png)
+![image](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/data-aug.png)
 
 1.1 顶部径迹探测器的重建。
    根据宇宙线缪子在JUNO测器的分布，使用产生子产生经过顶部径迹探测器和中心探测器的GenEvent数据。利用产生子数据GenEvent和顶部径迹探测器的缪子模拟算法产生经过顶部径迹探测器的缪子模拟事例SimEvent。然后对模拟数据进行刻度和重建得到重建数据。  

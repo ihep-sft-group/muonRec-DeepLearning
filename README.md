@@ -3,11 +3,17 @@
 Python：2.7  
 TensorFlow：1.3.0  
 Offline：J16v1r4、J17v1r1  
+## 前言
+江门中微子实验具有丰富的物理研究内容，其主要物理目标为测量中微子的质量等级和精确测量中微子的振荡参数。
+江门中微子实验探测器如图所示：
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/detector.png)
+
+宇宙线缪子作为主要的本底之一，其次级产物Li9/He8与实验测量的IBD过程的行为非常相似，无法区分，因此缪子径迹的重建非常关键。相比于已有的重建方法，基于深度学习的方法不需要构建复杂的光学模型和进行额外的修正，可作为现有重建方法的补充。主要包括一下几个部分：
 
 ## 1. 数据集篇 —— 三军未动，粮草先行 
 深度学习是由数据驱动的，数据样本将直接和重建的性能相关。
-数据的处理流程如图所示：
-![](https://jupyter.ihep.ac.cn/uploads/upload_a8cbe3bb115e2130315a0970d81e87d8.png)
+数据的处理流程如图所示：  
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/data-aug.png)
 
 1.1 顶部径迹探测器的重建。
    根据宇宙线缪子在JUNO测器的分布，使用产生子产生经过顶部径迹探测器和中心探测器的GenEvent数据。利用产生子数据GenEvent和顶部径迹探测器的缪子模拟算法产生经过顶部径迹探测器的缪子模拟事例SimEvent。然后对模拟数据进行刻度和重建得到重建数据。  
@@ -32,13 +38,22 @@ Offline：J16v1r4、J17v1r1
 经过中心探测器之后，得到中心探测器的模拟数据。将模拟数据进行数据提取和建模之后形成类似图片形式的数据。
 * source sim-nn/sim-data/cnn.sh   #提取模拟数据中所有PMT的击中信息 输入文件路径list 输出signal-0_evt_-175.322_-13827.3_25000_0.0415556_0.510892_-0.85864_183785.root
 * source sim-nn/sim-tfrecod/junonn_tt_root__tfrecords.py #输入为signal-*.root所在的目录，产生evt_1000_1.bin.tfrecords文件
+* 图片示例：![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/2D-convg.png)  
 
 1.5 数据增强-旋转。
-将标签为顶部径迹探测器的重建信息Rec的数据集使用缪子事例的增强方法产生旋转后的事例，旋转后的事例入射点和方向的分布基本上覆盖了宇宙线缪子的在中心探测器的入射点和方向的分布。
+将标签为顶部径迹探测器的重建信息Rec的数据集使用缪子事例的增强方法产生旋转后的事例，旋转后的事例覆盖了TT探测器没有覆盖的事例，如图所示：  
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/TT_rot_1.png)  
+
+旋转后的事例入射点和方向的分布基本上覆盖了宇宙线缪子的在中心探测器的入射点和方向的分布。
 * python change_tfrecord_fxl2.py  #输入为原始数据，输出为旋转后的数据
+* 旋转的方式有很多，但是需要考虑旋转之后需要保持数据的均匀性，采用的旋转方法如图所示：  
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/TT_rot_2.png)  
+
+* 旋转方法的思想是取得良好重建性能的关键，详细的内容可以参考本人的论文：JUNO实验基于深度学习的缪子重建和关联数据分析软件研究
 
 ## 2 神经网络篇 —— 谋定而后动，一发制敌
-用于分类的卷积神经网络有很多，例如AlexNet、VGGNet、ResNet等，这里主要使用的是VGGNet-I和SCNN-I。如图所示![](https://jupyter.ihep.ac.cn/uploads/upload_326fd6bc4718a171aa3d0be464e697c1.png)  
+用于分类的卷积神经网络有很多，例如AlexNet、VGGNet、ResNet等，这里主要使用的是VGGNet-I和SCNN-I。如图所示：  
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/TT_rot_2.png) 
 
 2.1 输入层  
 输入数据是电荷和时间的双通道的图像。深度学习的输入数据，在进入神经网络进行数据训练之前，一般需要对输
@@ -56,8 +71,9 @@ track = (x,y,z,px,py,pz)
 x,y,z是入射点的位置，归一化的单位向量；px,py,pz是径迹的方向，归一化为单位向量。避免单位的影响和训练过程中的偏好
 
 2.4 损失函数  
-损失函数是度量卷积神经网络模型的准确性以及优化的一个重要的目标，通常被用来评估卷积神经网模型的输出值与实际值相接近的程度。在损失函数的构造中除衡量模型预测性能的部分外，一般还会添加一定的正则化惩罚项，以对抗复杂模型导致的过拟合问题。  
-![](https://jupyter.ihep.ac.cn/uploads/upload_e1205e05a96e5b94b00ee0edc1c064cb.png)
+损失函数是度量卷积神经网络模型的准确性以及优化的一个重要的目标，通常被用来评估卷积神经网模型的输出值与实际值相接近的程度。在损失函数的构造中除衡量模型预测性能的部分外，一般还会添加一定的正则化惩罚项，以对抗复杂模型导致的过拟合问题。    
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/loss.png)   
+
 * 参考代码：neural-network/train-tt-2D/junonn_loss.py
 
 
@@ -65,7 +81,8 @@ x,y,z是入射点的位置，归一化的单位向量；px,py,pz是径迹的方�
 训练过程中需要关注两个超参数，一个是学习率，另一个是批样本大小。其中，学习率的设定非常重要将直接影响到网络的收敛。  
 参考代码: neural-network/train-tt-2D/junonn_train.py  
 根据实践经验得出的初始学习率为0.1，每50k步学习率降低1/10。批样本大小batch_size为256。训练的曲线为：  
-![](https://jupyter.ihep.ac.cn/uploads/upload_d2008e6b67ace9194a28783b335fc2cb.png)
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/loss_vs_step.png)   
+
 训练集的loss和验证集的loss很接近，并且验证集的loss基本没有太大的变化，这表明模型被训练的刚刚好，模型具有良好的泛化能力和学习能力。
 * 网络训练：python neural-network/train-tt-2D/main.py --train_data neural-network/train-tt-2D/ --train_dir neural-network/train-tt-2D/train/ --ckp_dir neural-network/train-tt-2D/train/ --batch_size 128
 * 网络验证：python neural-network/train-tt-2D/junonn_eval_reg.py --eval_data neural-network/test-300k/ --eval_dir neural-network/train-tt-2D/eval/ --ckp_dir neural-network/train-tt-2D/train --eval_interval_secs 60 --num_examples 1000 --batch_size 64
@@ -80,6 +97,9 @@ x,y,z是入射点的位置，归一化的单位向量；px,py,pz是径迹的方�
 性能绘图，参考draw/ 目录下的各种绘图函数，例如：  
 * root -l angle_mean_sigma.C #角度的均值和分辨率随径迹到球心距离之间的关系  
 * root -l dD_mean_sigma.C #真实径迹和重建径迹距离球心的残差的均值和分辨率随径迹到球心距离之间的关系  
+* 性能展示如图所示：  
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/angle_rot_MC.png)   
+![](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/dD_rot_MC.png)   
 
 ## 5 总结 —— 实践是检验真理的唯一标准
 不仅要读万卷书，还要行万里路。基于深度学习的缪子重建，影响重建性能的因素有很多，需要我们不断的探索，从理论中来到实践中去。以下有几点建议，尽可斟酌而行：  

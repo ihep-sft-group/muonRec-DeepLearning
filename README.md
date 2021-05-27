@@ -1,7 +1,7 @@
 # 基于深度学习的缪子重建
 ### 系统环境：
 Python：2.7  
-ROOT： 5.12
+ROOT： 5.12  
 TensorFlow：1.3.0  
 Offline：J16v1r4、J17v1r1  
 ## 前言
@@ -62,17 +62,17 @@ Offline：J16v1r4、J17v1r1
 2.1 输入层  
 输入数据是电荷和时间的双通道的图像。深度学习的输入数据，在进入神经网络进行数据训练之前，一般需要对输
 入数据做一些预处理，加快神经网络的收敛。主要采用的预处理方式是将图像中的每一个通道的像素数组进行标准化处理:  
-              x'=(x-μ)/σ
+              <center>x'=(x-μ)/σ</center>
 其中，X是原始数据，X'是标准化后的数据，μ是X的平均值，σ是X的标准偏差。
 * 参考代码：neural-network/train-tt-2D/junonn_inputs_tt.py
 
 2.2 平面卷积神经网络  
 VGGNet神经网络是目前最常用的用来提取图像特征的神经网络，多层卷积和池化之后，卷积神经网络逐渐将原始数据转化为局部的特征信号，底层的特征信号转换为抽象的特征信号，抽象特征信号最后转换为预测任务的输出。网络中全连接层(浅层网络节点：1024-512-256-6)的参数数量减少了75％，并且获得了更好的重建性能。最后，使用具有6个节点的全连接的输出层output以获取网络的预测。在输出层之后是损失函数，用于计算预测值和真实值之间的误差。  
-* 参考代码：neural-network/train-tt-2D/junonn_inference_vgg16.py
+* 参考代码：neural-network/train-tt-2D/junonn_inference_vgg16.py  
 
 2.3 输出层径迹参数  
-track = (x,y,z,px,py,pz)  
-x,y,z是入射点的位置，归一化的单位向量；px,py,pz是径迹的方向，归一化为单位向量。避免单位的影响和训练过程中的偏好
+<center>track = (x,y,z,px,py,pz) </center>  
+x,y,z是入射点的位置，归一化的单位向量；px,py,pz是径迹的方向，归一化为单位向量。避免单位的影响和训练过程中的偏好  
 
 2.4 损失函数  
 损失函数是度量卷积神经网络模型的准确性以及优化的一个重要的目标，通常被用来评估卷积神经网模型的输出值与实际值相接近的程度。在损失函数的构造中除衡量模型预测性能的部分外，一般还会添加一定的正则化惩罚项，以对抗复杂模型导致的过拟合问题。    
@@ -87,7 +87,7 @@ x,y,z是入射点的位置，归一化的单位向量；px,py,pz是径迹的方�
 根据实践经验得出的初始学习率为0.1，每50k步学习率降低1/10。批样本大小batch_size为256。训练的曲线为：  
 ![image](https://github.com/ihep-sft-group/muonRec-DeepLearning/blob/main/images/loss_vs_step.png)   
 
-训练集的loss和验证集的loss很接近，并且验证集的loss基本没有太大的变化，这表明模型被训练的刚刚好，模型具有良好的泛化能力和学习能力。
+训练集的loss和验证集的loss很接近，并且验证集的loss基本没有太大的变化，这表明模型被训练的刚刚好，模型具有良好的泛化能力和学习能力。  
 * 网络训练：python neural-network/train-tt-2D/main.py --train_data neural-network/train-tt-2D/ --train_dir neural-network/train-tt-2D/train/ --ckp_dir neural-network/train-tt-2D/train/ --batch_size 128
 * 网络验证：python neural-network/train-tt-2D/junonn_eval_reg.py --eval_data neural-network/test-300k/ --eval_dir neural-network/train-tt-2D/eval/ --ckp_dir neural-network/train-tt-2D/train --eval_interval_secs 60 --num_examples 1000 --batch_size 64
 * 训练过程可以使用：tensorboard --logdir neural-network/train-tt-2D/train
